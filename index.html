@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glowry</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for gradients and animations not directly covered by Tailwind */
+        body {
+            font-family: 'Inter', sans-serif; /* Using Inter as per instructions */
+        }
+
+        .text-gradient-header {
+            background-image: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .shadow-custom-blue-light {
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.12);
+        }
+
+        .shadow-custom-blue-hover {
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.18);
+        }
+
+        /* Floating hearts animation */
+        .floating-hearts {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .heart {
+            position: absolute;
+            opacity: 0.08; /* Reduced opacity for a subtle background effect */
+            font-size: 1.5rem; /* Base size for heart images */
+            animation: float 8s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .heart:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+        .heart:nth-child(2) { top: 20%; right: 10%; animation-delay: 2s; }
+        .heart:nth-child(3) { top: 60%; left: 15%; animation-delay: 4s; }
+        .heart:nth-child(4) { top: 80%; right: 20%; animation-delay: 6s; }
+
+        /* Specific background gradients for icons */
+        .bg-identra { background-image: linear-gradient(135deg, #667eea, #764ba2); }
+        .bg-wand { background-image: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .bg-personal { background-image: linear-gradient(135deg, #a8edea, #fed6e3); }
+        .bg-review { background-image: linear-gradient(135deg, #ffecd2, #fcb69f); }
+
+        /* Custom style for today's focus card border */
+        .today-focus-card-border {
+            border-width: 2px;
+            border-image-slice: 1;
+            border-image-source: linear-gradient(to bottom right, #89f7fe, #66a6ff);
+        }
+
+        /* Background icon styles for header cards */
+        .card-with-bg-icons {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bg-icon-left {
+            position: absolute;
+            top: 15%;
+            left: -60px;
+            transform: translateY(-50%);
+            opacity: 0.3;
+            z-index: 1;
+            width: 170px;
+            height: 170px;
+        }
+
+        .bg-icon-right {
+            position: absolute;
+            top: 50%;
+            right: -30px;
+            transform: translateY(-50%);
+            opacity: 0.3;
+            z-index: 1;
+            width: 170px;
+            height: 170px;
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-gray-800 leading-relaxed antialiased bg-gradient-to-br from-blue-50 to-indigo-50 via-gray-50">
+    <!-- Floating Hearts Background -->
+    <div class="floating-hearts">
+        <div class="heart">💕</div>
+        <div class="heart">✨</div>
+        <div class="heart">🌸</div>
+        <div class="heart">💖</div>
+    </div>
+
+    <div class="container max-w-7xl mx-auto px-5 min-h-screen py-8 md:py-12">
+        <!-- Header Section -->
+        <header class="text-center py-10 md:py-12">
+            <img src="Assets/glowry_logo.png" alt="Glowry Logo" class="inline-block h-[9rem] md:h-[15rem]">
+            <p class="text-lg md:text-xl lg:text-2xl text-gray-600 font-medium mb-8">Your feminine lifestyle companion</p>
+            
+            <!-- Dynamic Time and Next Activity Display -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+                <!-- Today Card -->
+                <div id="today-card" class="card-with-bg-icons bg-white bg-opacity-85 backdrop-blur-xl rounded-3xl p-4 flex flex-col justify-center items-center shadow-custom-blue-light border border-white border-opacity-30 min-h-[110px] today-focus-card-border">
+                    <div class="card-content w-full">
+                        <p class="text-sm font-medium text-gray-500 mb-2">Today's Focus</p>
+                        <div id="today-content" class="w-full"></div>
+                    </div>
+                </div>
+                <!-- Current Activity Card -->
+                <div id="current-activity-card" class="card-with-bg-icons relative overflow-hidden bg-white bg-opacity-85 backdrop-blur-xl rounded-3xl p-4 flex flex-col justify-center items-center shadow-custom-blue-light border border-white border-opacity-30 min-h-[110px]">
+                    <div id="activity-progress-bar" class="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-100 to-purple-200 transition-all duration-1000 ease-linear" style="width: 0%;"></div>
+                    <div class="card-content w-full text-center">
+                        <p class="text-sm font-medium text-gray-500 mb-2">Current Activity</p>
+                        <div id="current-activity-content" class="w-full"></div>
+                    </div>
+                </div>
+                <!-- Next Up Card -->
+                <div id="next-up-card" class="card-with-bg-icons bg-white bg-opacity-85 backdrop-blur-xl rounded-3xl p-4 flex flex-col justify-center items-center shadow-custom-blue-light border border-white border-opacity-30 min-h-[110px]">
+                    <div class="card-content w-full">
+                        <p class="text-sm font-medium text-gray-500 mb-2">Next Up</p>
+                        <div id="next-activity-content" class="w-full"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Grid -->
+        <main class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16 max-w-4xl md:max-w-7xl mx-auto mt-8">
+            <!-- Daily Routine Card -->
+            <section class="card bg-white bg-opacity-85 backdrop-blur-xl rounded-3xl p-6 md:p-8 lg:p-10 mb-5 shadow-custom-blue-light border border-white border-opacity-30">
+                <h2 class="card-title text-2xl md:text-3xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <!-- Icon for Daily Routine title -->
+                    <span class="w-8 h-8 flex items-center justify-center text-2xl">⏱</span> Daily Routine
+                </h2>
+                <p class="card-subtitle text-base md:text-lg text-gray-600 mb-6 font-medium">Structured flow for every day</p>
+                
+                <div id="daily-routine-container" class="routine-grid flex flex-col space-y-4">
+                    <!-- Routine Items will be rendered here -->
+                </div>
+            </section>
+
+            <!-- Weekly Focus Breakdown Card -->
+            <section class="card bg-white bg-opacity-85 backdrop-blur-xl rounded-3xl p-6 md:p-8 lg:p-10 mb-5 shadow-custom-blue-light border border-white border-opacity-30">
+                <h2 class="card-title text-2xl md:text-3xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <!-- Icon for Weekly Focus title -->
+                    <span class="w-8 h-8 flex items-center justify-center text-2xl">📅</span> Weekly Focus Breakdown
+                </h2>
+                <p class="card-subtitle text-base md:text-lg text-gray-600 mb-6 font-medium">Clear project & sports distribution</p>
+                
+                <div id="weekly-focus-container" class="weekly-grid grid grid-cols-1 gap-6">
+                    <!-- Weekly Items will be rendered here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Global variable to store the current activity data
+        let currentActivity = null;
+        let nextActivity = null;
+
+        // Data for Daily Routine - now including emoji fallbacks
+        const dailyRoutineData = [
+            { time: "06:00", iconUrl: "Assets/girl-fitness.png", iconEmoji: "🏋️‍♀️", activity: "Sports" },
+            { time: "07:15", iconUrl: "Assets/girl-walking.png", iconEmoji: "🚶‍♀️", activity: "Walk" },
+            { time: "08:00", iconUrl: "Assets/girl-morning-routine.png", iconEmoji: "🍳", activity: "Breakfast / Buffer / Prep" },
+            { time: "09:00", iconUrl: "Assets/girl-study.png", iconEmoji: "📚", activity: "YKS Morning Study" },
+            { time: "10:30", iconUrl: "Assets/girl-working.png", iconEmoji: "💻", activity: "Work Session" },
+            { time: "16:00", iconUrl: "Assets/girl-coffee-break.png", iconEmoji: "☕", activity: "Long Break" },
+            { time: "17:00", iconUrl: "Assets/girl-working.png", iconEmoji: "💻", activity: "Work Session" },
+            { time: "20:30", iconUrl: "Assets/girl-free-time.png", iconEmoji: "🧘‍♀️", activity: "Free Time / Wind Down" },
+            { time: "22:00", iconUrl: "Assets/girl-sleeping.png", iconEmoji: "😴", activity: "Bedtime" }
+        ];
+
+        // Data for Weekly Focus - Now including emoji fallbacks
+        const weeklyFocusData = [
+            { day: "Sun", workIconClass: "bg-review", workIcon: "Assets/girl-vacation.png", workEmoji: "🏖️", workActivity: "Rest", sportsIcon: "Assets/girl-walking.png", sportsEmoji: "🚶‍♀️", sportsActivity: "Rest or Light Walk" },
+            { day: "Mon", workIconClass: "bg-identra", workIcon: "Assets/identra-icon.png", workEmoji: "🏢", workActivity: "Identra Solutions", sportsIcon: "Assets/girl-fitness-leg.png", sportsEmoji: "🦵", sportsActivity: "Lower Body + Yoga" },
+            { day: "Tue", workIconClass: "bg-identra", workIcon: "Assets/identra-icon.png", workEmoji: "🏢", workActivity: "Identra Solutions", sportsIcon: "Assets/girl-fitness-core.png", sportsEmoji: "💪", sportsActivity: "Core + Yoga" },
+            { day: "Wed", workIconClass: "bg-wand", workIcon: "Assets/wand-games.png", workEmoji: "🎮", workActivity: "Wand Games", sportsIcon: "Assets/girl-fitness-leg.png", sportsEmoji: "🦵", sportsActivity: "Lower Body + Yoga" },
+            { day: "Thu", workIconClass: "bg-wand", workIcon: "Assets/wand-games.png", workEmoji: "🎮", workActivity: "Wand Games", sportsIcon: "Assets/girl-fitness-core.png", sportsEmoji: "💪", sportsActivity: "Core + Yoga" },
+            { day: "Fri", workIconClass: "bg-wand", workIcon: "Assets/wand-games.png", workEmoji: "🎮", workActivity: "Wand Games", sportsIcon: "Assets/girl-fitness-leg.png", sportsEmoji: "🦵", sportsActivity: "Lower Body + Yoga" },
+            { day: "Sat", workIconClass: "bg-personal", workIcon: "Assets/girl-working.png", workEmoji: "💻", workActivity: "Personal Project", sportsIcon: "Assets/girl-yoga.png", sportsEmoji: "🧘", sportsActivity: "Yoga or Rest" }
+        ];
+
+        /**
+         * Returns HTML for an icon, preferring an image if the URL is a valid image candidate (HTTP/HTTPS or local asset path),
+         * otherwise falls back to displaying the 'url' content directly as an emoji.
+         * If an image fails to load, it will replace the image with the provided emojiFallback.
+         * @param {string} url - The URL for the image icon or the emoji string itself.
+         * @param {string} emojiFallback - The emoji to use if the image URL fails to load.
+         * @param {string} altText - Alt text for the image.
+         * @param {string} imgSizeClass - Tailwind CSS classes for image size (e.g., 'w-full h-full').
+         * @param {string} emojiSizeClass - Tailwind CSS classes for emoji size (e.g., 'text-xl').
+         * @returns {string} HTML string for the icon.
+         */
+        function getIconOrEmoji(url, emojiFallback, altText, imgSizeClass, emojiSizeClass) {
+            // Check if the URL is a valid image candidate (HTTP/HTTPS or a local "Assets/" path with common image extensions)
+            const isImageCandidate = url && (url.startsWith('http://') || url.startsWith('https://') || url.includes('Assets/') || /\.(png|jpg|jpeg|gif|svg)$/i.test(url));
+            const finalImgSizeClass = imgSizeClass || 'w-full h-full';
+            const finalEmojiSizeClass = emojiSizeClass || 'text-xl';
+
+            if (isImageCandidate) {
+                // Try to load as image, use emojiFallback on error
+                return `<img src="${url}" alt="${altText}" class="${finalImgSizeClass}" onerror="this.onerror=null;this.outerHTML='<span class=\\'${finalEmojiSizeClass} flex items-center justify-center\\'>${emojiFallback}</span>';" />`;
+            } else {
+                // If not an image candidate, treat the 'url' parameter itself as the emoji to display
+                return `<span class="${finalEmojiSizeClass} flex items-center justify-center">${url}</span>`;
+            }
+        }
+
+        /**
+         * Renders the daily routine items into the specified container.
+         * Adds emphasis to the current activity.
+         */
+        function renderDailyRoutine() {
+            const container = document.getElementById('daily-routine-container');
+            container.innerHTML = ''; // Clear existing content
+            dailyRoutineData.forEach(item => {
+                const routineItemDiv = document.createElement('div');
+                let classes = 'flex items-center p-4 backdrop-blur-sm rounded-xl transition-all duration-300 ease-in-out shadow-sm hover:shadow-lg';
+                
+                // Add emphasis if this is the current activity
+                if (currentActivity && item.time === currentActivity.time) {
+                    classes += ' border-2 border-green-500 bg-green-50/90 scale-110 hover:scale-[1.11]';
+                }
+
+                if(nextActivity && item.time === nextActivity.time) {
+                    classes += ' border-yellow-500 border-2 bg-yellow-50/90 scale-105 hover:scale-[1.06]';
+                }
+                
+                if(item.time !== currentActivity.time && item.time !== nextActivity.time)
+                {
+                    classes += ' bg-white/70 border border-gray-200/80 hover:scale-[1.03] hover:bg-white/90';
+                }
+
+                routineItemDiv.className = classes;
+                routineItemDiv.innerHTML = getRoutineItemHTML(item);
+                container.appendChild(routineItemDiv);
+            });
+        }
+
+        /**
+         * Renders the weekly focus items into the specified container.
+         * Adds emphasis to today's day.
+         */
+        function renderWeeklyFocus() {
+            const container = document.getElementById('weekly-focus-container');
+            container.innerHTML = ''; // Clear existing content
+            const todayIndex = new Date().getDay(); // 0 for Sunday, 1 for Monday, etc.
+            const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            const currentDayString = daysOfWeek[todayIndex];
+
+            weeklyFocusData.forEach((item) => {
+                const weeklyItemDiv = document.createElement('div');
+                let classes = 'p-4 bg-white/80 backdrop-blur-sm rounded-2xl transition-all duration-300 ease-in-out border border-gray-200/80 shadow-md hover:shadow-xl hover:scale-[1.03] hover:bg-white/95';
+                
+                // Add emphasis if this is today's day
+                if (item.day === currentDayString) {
+                    classes += ' border-indigo-500 border-2 bg-indigo-50/90 shadow-lg';
+                }
+
+                weeklyItemDiv.className = classes;
+                weeklyItemDiv.innerHTML = getWeeklyItemHTML(item);
+                container.appendChild(weeklyItemDiv);
+            });
+        }
+
+        /**
+         * Generates the inner HTML for a daily routine item.
+         * This function now uses larger icons.
+         */
+        function getRoutineItemHTML(item) {
+            if (!item) return `<div class="text-center w-full font-medium text-gray-600">--</div>`;
+            return `
+                <div class="routine-time font-bold text-indigo-600 min-w-[60px] text-base">${item.time}</div>
+                <div class="routine-icon w-10 h-10 flex items-center justify-center mr-4">
+                    ${getIconOrEmoji(item.iconUrl, item.iconEmoji, `${item.activity} Icon`, 'w-full h-full', 'text-2xl')}
+                </div>
+                <div class="routine-activity flex-1 ml-2 font-medium text-gray-700">${item.activity}</div>
+            `;
+        }
+
+        /**
+         * Generates the inner HTML for a weekly focus item.
+         * This is used for the main Weekly Focus Breakdown section with larger icons.
+         */
+        function getWeeklyItemHTML(item) {
+            if (!item) return `<div class="text-center w-full font-medium text-gray-600">--</div>`;
+            return `
+                <div class="flex flex-col md:flex-row md:items-center gap-4 w-full">
+                    <!-- Day Indicator -->
+                    <div class="flex-shrink-0 flex items-center gap-3">
+                        <span class="font-bold text-indigo-600 text-lg w-10">${item.day}</span>
+                    </div>
+
+                    <!-- Activities -->
+                    <div class="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Work Activity -->
+                        <div class="flex items-center gap-3">
+                            <div class="work-icon ${item.workIconClass} w-12 h-12 rounded-full flex items-center justify-center shadow-inner">
+                                <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center overflow-hidden">
+                                    ${getIconOrEmoji(item.workIcon, item.workEmoji, "Work Icon", 'w-full h-full', 'text-2xl')}
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-700">${item.workActivity}</p>
+                            </div>
+                        </div>
+                        <!-- Sports Activity -->
+                        <div class="flex items-center gap-3">
+                            <div class="sports-icon bg-indigo-100 w-12 h-12 rounded-full flex items-center justify-center shadow-inner">
+                                <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center overflow-hidden">
+                                    ${getIconOrEmoji(item.sportsIcon, item.sportsEmoji, "Sports Icon", 'w-full h-full', 'text-2xl')}
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-700">${item.sportsActivity}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Generates the inner HTML specifically for the "Today's Focus" header card.
+         * This provides a more compact design with background icons.
+         */
+        function getTodaysFocusHTML(item) {
+            if (!item) return `<div class="text-center w-full font-medium text-gray-600">--</div>`;
+            return `
+                <div class="flex flex-col items-center justify-center text-center w-full">
+                    <div class="flex items-center justify-center gap-2 mb-1">
+                        <div class="work-icon ${item.workIconClass} w-8 h-8 rounded-full flex items-center justify-center shadow-inner">
+                            <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center">
+                                ${getIconOrEmoji(item.workIcon, item.workEmoji, "Work Icon", 'w-6 h-6', 'text-base')}
+                            </div>
+                        </div>
+                        <p class="text-base font-semibold text-gray-700">${item.workActivity}</p>
+                    </div>
+                    <div class="flex items-center justify-center gap-2">
+                        <div class="sports-icon bg-indigo-100 w-8 h-8 rounded-full flex items-center justify-center shadow-inner">
+                            <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center">
+                                ${getIconOrEmoji(item.sportsIcon, item.sportsEmoji, "Sports Icon", 'w-6 h-6', 'text-base')}
+                            </div>
+                        </div>
+                        <p class="text-base font-semibold text-gray-700">${item.sportsActivity}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Generates HTML for header card content with background icons
+         */
+        function getHeaderCardHTML(item) {
+            if (!item) return `<div class="text-center w-full font-medium text-gray-600">--</div>`;
+            
+            return `
+                <div class="text-center w-full">
+                    <div class="flex items-center justify-center gap-2 mb-1">
+                        <div class="w-8 h-8 flex items-center justify-center">
+                            ${getIconOrEmoji(item.iconUrl, item.iconEmoji, `${item.activity} Icon`, 'w-full h-full', 'text-xl')}
+                        </div>
+                        <p class="text-sm font-semibold text-gray-700">${item.time}</p>
+                    </div>
+                    <p class="text-base font-medium text-gray-800">${item.activity}</p>
+                </div>
+            `;
+        }
+
+        /**
+         * Adds background icons to header cards.
+         * If the iconUrl is not an HTTP/HTTPS link or a local asset path, an emoji is used instead.
+         * @param {string} cardId - The ID of the card element.
+         * @param {string|null} leftIconUrl - The URL for the left background icon or the emoji string.
+         * @param {string|null} leftIconEmoji - The emoji fallback for the left background icon.
+         * @param {string|null} rightIconUrl - The URL for the right background icon or the emoji string, or null.
+         * @param {string|null} rightIconEmoji - The emoji fallback for the right background icon, or null.
+         */
+        function addBackgroundIcons(cardId, leftIconUrl, leftIconEmoji, rightIconUrl, rightIconEmoji) {
+            const card = document.getElementById(cardId);
+            if (!card) return;
+
+            // Remove existing background icons
+            const existingBgIcons = card.querySelectorAll('.bg-icon-left, .bg-icon-right');
+            existingBgIcons.forEach(icon => icon.remove());
+
+            const largeIconSizeClass = 'w-full h-full object-cover'; // For images
+            const largeEmojiSizeClass = 'text-9xl'; // For emojis
+
+            const createBackgroundIconHTML = (url, emojiFallback) => {
+                const isImageCandidate = url && (url.startsWith('http://') || url.startsWith('https://') || url.includes('Assets/') || /\.(png|jpg|jpeg|gif|svg)$/i.test(url));
+                if (isImageCandidate) {
+                    return `<img src="${url}" alt="Background Icon" class="${largeIconSizeClass}" onerror="this.onerror=null;this.outerHTML='<span class=\\'${largeEmojiSizeClass} flex items-center justify-center\\'>${emojiFallback}</span>';" />`;
+                } else {
+                    // If not an image candidate, display the 'url' content as emoji
+                    return `<span class="${largeEmojiSizeClass} flex items-center justify-center">${url}</span>`;
+                }
+            };
+
+            if (leftIconUrl) {
+                const leftBgIcon = document.createElement('div');
+                leftBgIcon.className = 'bg-icon-left flex items-center justify-center'; // Add flex for emoji centering
+                leftBgIcon.innerHTML = createBackgroundIconHTML(leftIconUrl, leftIconEmoji);
+                card.appendChild(leftBgIcon);
+            }
+
+            if (rightIconUrl) {
+                const rightBgIcon = document.createElement('div');
+                rightBgIcon.className = 'bg-icon-right flex items-center justify-center'; // Add flex for emoji centering
+                rightBgIcon.innerHTML = createBackgroundIconHTML(rightIconUrl, rightIconEmoji);
+                card.appendChild(rightBgIcon);
+            }
+        }
+
+        /**
+         * Updates the header cards with current day, current activity, and next activity.
+         * Also sets the global `currentActivity` variable.
+         */
+        function updateHeaderCards() {
+            const now = new Date();
+            const dayIndex = now.getDay(); // 0 for Sunday, 1 for Monday, etc.
+            const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+
+            // --- Update Today's Focus Card ---
+            const todaysFocusData = weeklyFocusData[dayIndex];
+            const todayContent = document.getElementById('today-content');
+            todayContent.innerHTML = getTodaysFocusHTML(todaysFocusData);
+            
+            // Add background icons to Today's Focus card (both left and right)
+            addBackgroundIcons('today-card', todaysFocusData.workIcon, todaysFocusData.workEmoji, todaysFocusData.sportsIcon, todaysFocusData.sportsEmoji);
+
+            // --- Logic for Current/Next Activity and Progress Bar ---
+            // For the "Before your day starts..." activity, the iconUrl is an emoji directly.
+            let activityDataForHeader = { time: "...", iconUrl: "🌙", iconEmoji: "🌙", activity: "Before your day starts..." };
+            let nextActivityData = dailyRoutineData[0];
+            let currentActivityStartMinutes = 0;
+            
+            const firstActivityTimeParts = dailyRoutineData[0].time.split(':').map(Number);
+            let nextActivityStartMinutes = firstActivityTimeParts[0] * 60 + firstActivityTimeParts[1];
+
+            for (let i = 0; i < dailyRoutineData.length; i++) {
+                const item = dailyRoutineData[i];
+                const itemTimeParts = item.time.split(':').map(Number);
+                const itemStartMinutes = itemTimeParts[0] * 60 + itemTimeParts[1];
+
+                if (itemStartMinutes <= currentTotalMinutes) {
+                    activityDataForHeader = item;
+                    currentActivityStartMinutes = itemStartMinutes;
+
+                    if (i + 1 < dailyRoutineData.length) {
+                        const nextItem = dailyRoutineData[i + 1];
+                        const nextItemTimeParts = nextItem.time.split(':').map(Number);
+                        nextActivityData = nextItem;
+                        nextActivityStartMinutes = nextItemTimeParts[0] * 60 + nextItemTimeParts[1];
+                    } else {
+                        // End of day activity, iconUrl is a local asset, with emoji fallback
+                        nextActivityData = { time: "...", iconUrl: "/Assets/girl-sleeping.png", iconEmoji: "😴", activity: "End of day. Time to rest!" };
+                        nextActivityStartMinutes = 24 * 60; // Midnight
+                    }
+                }
+            }
+
+            // Set the global currentActivity variable
+            currentActivity = activityDataForHeader;
+            nextActivity = nextActivityData;
+
+            // --- Calculate and Apply Progress ---
+            const totalDuration = nextActivityStartMinutes - currentActivityStartMinutes;
+            const elapsedDuration = currentTotalMinutes - currentActivityStartMinutes;
+            let progressPercentage = 0;
+
+            if (totalDuration > 0 && activityDataForHeader.activity !== "Before your day starts...") {
+                progressPercentage = (elapsedDuration / totalDuration) * 100;
+            }
+            
+            progressPercentage = Math.max(0, Math.min(100, progressPercentage));
+
+            const progressBar = document.getElementById('activity-progress-bar');
+            if (progressBar) {
+                progressBar.style.width = `${progressPercentage}%`;
+            }
+
+            // --- Render Content ---
+            const currentActivityContent = document.getElementById('current-activity-content');
+            currentActivityContent.innerHTML = getHeaderCardHTML(activityDataForHeader);
+            
+            const nextActivityContent = document.getElementById('next-activity-content');
+            nextActivityContent.innerHTML = getHeaderCardHTML(nextActivityData);
+
+            // Add background icons to Current Activity and Next Up cards
+            addBackgroundIcons('current-activity-card', null, null, activityDataForHeader.iconUrl, activityDataForHeader.iconEmoji);
+            addBackgroundIcons('next-up-card', null, null, nextActivityData.iconUrl, nextActivityData.iconEmoji);
+        }
+
+        // Initialize rendering and time updates when the window loads
+        window.onload = function() {
+            // First, update header cards to determine currentActivity
+            updateHeaderCards(); 
+            // Then, render routines and weekly focus, which now use currentActivity and current day info
+            renderDailyRoutine();
+            renderWeeklyFocus();
+            
+            // Set interval to update everything periodically
+            setInterval(() => {
+                updateHeaderCards();
+                renderDailyRoutine();
+                renderWeeklyFocus();
+            }, 60000); // Update every minute
+        };
+    </script>
+</body>
+</html>
